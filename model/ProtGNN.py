@@ -94,7 +94,8 @@ class ProtGNN(object):
         output_layer = FuncPredictor(output_dim=output_dim, name='labels')(x)
 
         self.model = tf.keras.Model(inputs=[input_cmap, input_seq], outputs=output_layer)
-        optimizer = tf.keras.optimizers.Adam(learning_rate=lr, beta_1=0.95, beta_2=0.99)
-        pred_loss = tf.keras.losses.CategoricalCrossentropy()
-        self.model.compile(optimizer=optimizer, loss=pred_loss, metrics=['acc'])
-        print(self.model.summary())
+        return self.model
+#         optimizer = tf.keras.optimizers.Adam(learning_rate=lr, beta_1=0.95, beta_2=0.99)
+#         pred_loss = tf.keras.losses.CategoricalCrossentropy()
+#         self.model.compile(optimizer=optimizer, loss=pred_loss, metrics=['acc'])
+#         print(self.model.summary())

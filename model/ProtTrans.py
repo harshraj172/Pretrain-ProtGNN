@@ -5,8 +5,6 @@ import numpy as np
 
 
 class ProtTrans(object):
-
-  
     """ Class containig the LM models for predicting protein function. """
     def __init__(self, output_dim, n_channels=26):
         """ Initialize the model

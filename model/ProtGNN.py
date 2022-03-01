@@ -31,9 +31,9 @@ class ProtGNN(object):
         self.model_name_prefix = model_name_prefix
 
         # build and compile model
-        self._build_model(gc_dims, fc_dims, n_channels, output_dim, lr, drop, l2_reg, gc_layer, lm_model=lm_model)
+        self._build_model(gc_dims, fc_dims, input_dim, output_dim, lr, drop, l2_reg, gc_layer)
 
-    def _build_model(self, gc_dims, fc_dims, n_channels, output_dim, lr, drop, l2_reg, gc_layer=None, lm_model=None):
+    def _build_model(self, gc_dims, fc_dims, input_dim, output_dim, lr, drop, l2_reg, gc_layer=None):
 
         if gc_layer == 'NoGraphConv':
             self.GConv = NoGraphConv

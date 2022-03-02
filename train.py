@@ -23,8 +23,7 @@ def train(model, train_tfrecord_fn, valid_tfrecord_fn,
                                       n_goterms=self.output_dim,
                                       channels=self.n_channels,
                                       cmap_type=cmap_type,
-                                      cmap_thresh=cmap_thresh,
-                                      ont=ont)
+                                      cmap_thresh=cmap_thresh)
 
     # validation tfrecords
     batch_valid = get_batched_dataset(valid_tfrecord_fn,
@@ -33,8 +32,7 @@ def train(model, train_tfrecord_fn, valid_tfrecord_fn,
                                       n_goterms=self.output_dim,
                                       channels=self.n_channels,
                                       cmap_type=cmap_type,
-                                      cmap_thresh=cmap_thresh,
-                                      ont=ont)
+                                      cmap_thresh=cmap_thresh)
 
     # early stopping
     es = tf.keras.callbacks.EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=5)

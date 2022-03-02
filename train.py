@@ -1,8 +1,8 @@
 import glob
 import tensorflow as tf
 
-from .utils import get_batched_dataset
-from .layers import FuncPredictor, SumPooling
+from utils.utils import get_batched_dataset
+from model.layers import FuncPredictor, SumPooling
 
 import warnings
 import matplotlib.pyplot as plt
@@ -54,10 +54,10 @@ def train(model, train_tfrecord_fn, valid_tfrecord_fn,
 
     history = history.history
 
-def predict(self, input_data):
-    return self.model(input_data).numpy()[0][:, 0]
+def predict(input_data):
+    return model(input_data).numpy()[0][:, 0]
 
-def plot_losses(self):
+def plot_losses():
     plt.figure()
     plt.plot(self.history['loss'], '-')
     plt.plot(self.history['val_loss'], '-')
@@ -76,10 +76,10 @@ def plot_losses(self):
     plt.legend(['train', 'validation'], loc='upper left')
     plt.savefig(self.model_name_prefix + '_model_accuracy.png', bbox_inches='tight')
 
-def save_model(model):
-    model.save(self.model_name_prefix + '.hdf5')
+def save_model(model, model_name_prefix):
+    model.save(model_name_prefix + '.hdf5')
 
-def load_model():
+def load_model(model_name_prefix):
     model = tf.keras.models.load_model(self.model_name_prefix + '.hdf5',
                                             custom_objects={self.gc_layer: self.GConv,
                                                             'FuncPredictor': FuncPredictor,

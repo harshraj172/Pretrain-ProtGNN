@@ -8,7 +8,10 @@ from model.ProtTrans import ProtTrans
 if __name__ == "__main__":
     # Training settings
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--output_dim', type=int, default=2, nargs='+', help="Output dimension-> Binary/Multi-class")
+    parser.add_argument('--n_channels', type=int, default=2, help="Input Sequence Length")
+    parser.add_argument('--lm_output_dim', type=int, default=1024, , help="Language Model's Output dimension")
+    parser.add_argument('--output_dim', type=int, default=2, help="Output dimension-> Binary/Multi-class") 
+    
     parser.add_argument('-gcd', '--gc_dims', type=int, default=[128, 128, 256], nargs='+', help="Dimensions of GraphConv layers.")
     parser.add_argument('-fcd', '--fc_dims', type=int, default=[], nargs='+', help="Dimensions of fully connected layers (after GraphConv layers).")
     parser.add_argument('-drop', '--dropout', type=float, default=0.3, help="Dropout rate.")
@@ -32,11 +35,14 @@ if __name__ == "__main__":
 
     train_tfrecord_fn = args.train_tfrecord_fn + '*'
     valid_tfrecord_fn = args.valid_tfrecord_fn + '*'
-
-    output_dim = args.output_dim
-
-    print ("### Training model: ", args.model_name, " on ", output_dim)
-    model = ProtGNN(output_dim=output_dim, n_channels=26, gc_dims=args.gc_dims, fc_dims=args.fc_dims,
+    
+    print ("### Predicting ProtTrans model: ", args.lm_model_name, " on ", lm_output_dim)
+    modelTrans = ProtTrans(output_dim=args.lm_output_dim, n_channels=args.n_channels)
+    
+    output_dim = args.output_dim    
+    
+    print ("### Training ProtGNN model: ", args.model_name, " on ", output_dim)
+    modelGNN = ProtGNN(output_dim=output_dim, input_dim=args.lm_output_dim, gc_dims=args.gc_dims, fc_dims=args.fc_dims,
                     lr=args.lr, drop=args.dropout, l2_reg=args.l2_reg, gc_layer=args.gc_layer,
                     lm_model_name=args.lm_model_name, model_name_prefix=args.model_name)
 

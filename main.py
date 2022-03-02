@@ -35,8 +35,8 @@ if __name__ == "__main__":
 
     output_dim = args.output_dim
 
-    print ("### Training model: ", args.model_name, " on ", output_dim, " GO terms.")
-    model = DeepFRI(output_dim=output_dim, n_channels=26, gc_dims=args.gc_dims, fc_dims=args.fc_dims,
+    print ("### Training model: ", args.model_name, " on ", output_dim)
+    model = ProtGNN(output_dim=output_dim, n_channels=26, gc_dims=args.gc_dims, fc_dims=args.fc_dims,
                     lr=args.lr, drop=args.dropout, l2_reg=args.l2_reg, gc_layer=args.gc_layer,
                     lm_model_name=args.lm_model_name, model_name_prefix=args.model_name)
 

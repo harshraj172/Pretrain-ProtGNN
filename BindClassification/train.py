@@ -15,9 +15,9 @@ import wandb
 from torch import nn, optim
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
-from BindClassification.dataset import _Antibody_Antigen_Dataset
+from dataset import _Antibody_Antigen_Dataset
 
-from BindClassification import models #as models
+import models #as models
 
 def to_np(x):
     return x.cpu().detach().numpy()

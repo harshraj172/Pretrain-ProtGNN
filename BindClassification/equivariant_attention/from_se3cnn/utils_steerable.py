@@ -1,9 +1,9 @@
 import torch
 import math
 import numpy as np
-from BindClassification.equivariant_attention.from_se3cnn.SO3 import irr_repr, torch_default_dtype
-from BindClassification.equivariant_attention.from_se3cnn.cache_file import cached_dirpklgz
-from BindClassification.equivariant_attention.from_se3cnn.representations import SphericalHarmonics
+from equivariant_attention.from_se3cnn.SO3 import irr_repr, torch_default_dtype
+from equivariant_attention.from_se3cnn.cache_file import cached_dirpklgz
+from equivariant_attention.from_se3cnn.representations import SphericalHarmonics
 
 ################################################################################
 # Solving the constraint coming from the stabilizer of 0 and e

@@ -9,8 +9,8 @@ from torch import nn
 from torch.nn import functional as F
 from typing import Dict, Tuple, List
 
-from equivariant_attention.modules import GConvSE3, GNormSE3, get_basis_and_r, GSE3Res, GMaxPooling, GAvgPooling
-from equivariant_attention.fibers import Fiber
+from BindClassification.equivariant_attention.modules import GConvSE3, GNormSE3, get_basis_and_r, GSE3Res, GMaxPooling, GAvgPooling
+from BindClassification.equivariant_attention.fibers import Fiber
 
 
 class TFN(nn.Module):

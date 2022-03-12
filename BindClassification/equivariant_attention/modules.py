@@ -1,4 +1,4 @@
-from BindClassification.utils.utils_profiling import *  # load before other local modules
+from utils.utils_profiling import *  # load before other local modules
 
 import numpy as np
 import torch
@@ -9,9 +9,9 @@ from contextlib import nullcontext
 
 from typing import Dict
 
-from BindClassification.equivariant_attention.from_se3cnn import utils_steerable
-from BindClassification.equivariant_attention.fibers import Fiber, fiber2head
-from BindClassification.utils.utils_logging import log_gradient_norm
+from equivariant_attention.from_se3cnn import utils_steerable
+from equivariant_attention.fibers import Fiber, fiber2head
+from utils.utils_logging import log_gradient_norm
 
 import dgl
 import dgl.function as fn

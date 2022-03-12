@@ -15,9 +15,9 @@ import wandb
 from torch import nn, optim
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
-from BindClassification import dataset
+from BindClassification.dataset import _Antibody_Antigen_Dataset
 
-from experiments.qm9 import models #as models
+from BindClassification import models #as models
 
 def to_np(x):
     return x.cpu().detach().numpy()
@@ -35,6 +35,7 @@ def train_epoch(epoch, model, loss_fnc, dataloader, optimizer, scheduler, FLAGS)
 
         # run model forward and compute loss
         pred = model(gAB, gAG)
+        print(f"%%%%%% {pred} %%%%%%")
         l1_loss, __, rescale_loss = loss_fnc(pred, y)
 
         # backprop
@@ -43,9 +44,10 @@ def train_epoch(epoch, model, loss_fnc, dataloader, optimizer, scheduler, FLAGS)
 
         if i % FLAGS.print_interval == 0:
             print(f"[{epoch}|{i}] l1 loss: {l1_loss:.5f} rescale loss: {rescale_loss:.5f} [units]")
-        if i % FLAGS.log_interval == 0:
-            wandb.log({"Train L1 loss": to_np(l1_loss), 
-                       "Rescale loss": to_np(rescale_loss)})
+        if FLAGS.use_wandb:
+            if i % FLAGS.log_interval == 0:
+                wandb.log({"Train L1 loss": to_np(l1_loss), 
+                        "Rescale loss": to_np(rescale_loss)})
 
         if FLAGS.profile and i == 10:
             sys.exit()
@@ -68,7 +70,8 @@ def val_epoch(epoch, model, loss_fnc, dataloader, FLAGS):
     rloss /= FLAGS.val_size
 
     print(f"...[{epoch}|val] rescale loss: {rloss:.5f} [units]")
-    wandb.log({"Val L1 loss": to_np(rloss)})
+    if FLAGS.use_wandb:
+        wandb.log({"Val L1 loss": to_np(rloss)})
 
 def test_epoch(epoch, model, loss_fnc, dataloader, FLAGS):
     model.eval()
@@ -86,7 +89,8 @@ def test_epoch(epoch, model, loss_fnc, dataloader, FLAGS):
     rloss /= FLAGS.test_size
 
     print(f"...[{epoch}|test] rescale loss: {rloss:.5f} [units]")
-    wandb.log({"Test L1 loss": to_np(rloss)})
+    if FLAGS.use_wandb:
+        wandb.log({"Test L1 loss": to_np(rloss)})
 
 
 class RandomRotation(object):
@@ -107,7 +111,7 @@ def collate(samples):
 def main(FLAGS, UNPARSED_ARGV):
 
     # Prepare data
-    train_dataset = dataset.Antibody_Antigen_Dataset(FLAGS.data_address, 
+    train_dataset = Antibody_Antigen_Dataset(FLAGS.meta_data_address, 
                                                      mode='train', 
                                                      transform=RandomRotation())
     train_loader = DataLoader(train_dataset, 
@@ -116,7 +120,7 @@ def main(FLAGS, UNPARSED_ARGV):
                               collate_fn=collate, 
                               num_workers=FLAGS.num_workers)
 
-    val_dataset = daatset.Antibody_Antigen_Dataset(FLAGS.data_address, 
+    val_dataset = Antibody_Antigen_Dataset(FLAGS.meta_data_address, 
                                                    mode='valid') 
     val_loader = DataLoader(val_dataset, 
                             batch_size=FLAGS.batch_size, 
@@ -124,7 +128,7 @@ def main(FLAGS, UNPARSED_ARGV):
                             collate_fn=collate, 
                             num_workers=FLAGS.num_workers)
 
-    test_dataset = dataset.Antibody_Antigen_Dataset(FLAGS.data_address, 
+    test_dataset = Antibody_Antigen_Dataset(FLAGS.meta_data_address, 
                                                     mode='test') 
     test_loader = DataLoader(test_dataset, 
                              batch_size=FLAGS.batch_size, 
@@ -137,15 +141,15 @@ def main(FLAGS, UNPARSED_ARGV):
     FLAGS.test_size = len(test_dataset)
 
     # Choose model
-    model = models.__dict__.get(FLAGS.model)(FLAGS.num_layers, 
-                                             train_dataset.atom_feature_size, 
-                                             FLAGS.num_channels,
-                                             num_nlayers=FLAGS.num_nlayers,
-                                             num_degrees=FLAGS.num_degrees,
-                                             edge_dim=train_dataset.num_bonds,
-                                             div=FLAGS.div,
-                                             pooling=FLAGS.pooling,
-                                             n_heads=FLAGS.head)
+    # model = models.__dict__.get(FLAGS.model)(FLAGS.num_layers, 
+    #                                          train_dataset.atom_feature_size, 
+    #                                          FLAGS.num_channels,
+    #                                          num_nlayers=FLAGS.num_nlayers,
+    #                                          num_degrees=FLAGS.num_degrees,
+    #                                          edge_dim=train_dataset.num_bonds,
+    #                                          div=FLAGS.div,
+    #                                          pooling=FLAGS.pooling,
+    #                                          n_heads=FLAGS.head)
     if FLAGS.restore is not None:
         model.load_state_dict(torch.load(FLAGS.restore))
     model.to(FLAGS.device)
@@ -197,7 +201,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     # Model parameters
-    parser.add_argument('--model', type=str, default='SE3Transformer', 
+    parser.add_argument('--model', type=str, default='Dual_SE3Transformer', 
             help="String name of model")
     parser.add_argument('--num_layers', type=int, default=4,
             help="Number of equivariant layers")
@@ -217,7 +221,7 @@ if __name__ == '__main__':
             help="Number of attention heads")
 
     # Meta-parameters
-    parser.add_argument('--batch_size', type=int, default=32, 
+    parser.add_argument('--batch_size', type=int, default=8, 
             help="Batch size")
     parser.add_argument('--lr', type=float, default=1e-3, 
             help="Learning rate")
@@ -233,7 +237,7 @@ if __name__ == '__main__':
     # Logging
     parser.add_argument('--name', type=str, default=None,
             help="Run name")
-    parser.add_argument('--use_wandb', type=eval, default=True,
+    parser.add_argument('--use_wandb', type=eval, default=False,
             help="To use wandb or not - [True, False]")
     parser.add_argument('--log_interval', type=int, default=25,
             help="Number of steps between logging key stats")

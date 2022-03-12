@@ -35,7 +35,6 @@ def train_epoch(epoch, model, loss_fnc, dataloader, optimizer, scheduler, FLAGS)
 
         # run model forward and compute loss
         pred = model(gAB, gAG)
-        print(f"%%%%%% {pred} %%%%%%")
         l1_loss, __, rescale_loss = loss_fnc(pred, y)
 
         # backprop
@@ -111,7 +110,7 @@ def collate(samples):
 def main(FLAGS, UNPARSED_ARGV):
 
     # Prepare data
-    train_dataset = Antibody_Antigen_Dataset(FLAGS.meta_data_address, 
+    train_dataset = _Antibody_Antigen_Dataset(FLAGS.meta_data_address, 
                                                      mode='train', 
                                                      transform=RandomRotation())
     train_loader = DataLoader(train_dataset, 
@@ -120,7 +119,7 @@ def main(FLAGS, UNPARSED_ARGV):
                               collate_fn=collate, 
                               num_workers=FLAGS.num_workers)
 
-    val_dataset = Antibody_Antigen_Dataset(FLAGS.meta_data_address, 
+    val_dataset = _Antibody_Antigen_Dataset(FLAGS.meta_data_address, 
                                                    mode='valid') 
     val_loader = DataLoader(val_dataset, 
                             batch_size=FLAGS.batch_size, 
@@ -128,7 +127,7 @@ def main(FLAGS, UNPARSED_ARGV):
                             collate_fn=collate, 
                             num_workers=FLAGS.num_workers)
 
-    test_dataset = Antibody_Antigen_Dataset(FLAGS.meta_data_address, 
+    test_dataset = _Antibody_Antigen_Dataset(FLAGS.meta_data_address, 
                                                     mode='test') 
     test_loader = DataLoader(test_dataset, 
                              batch_size=FLAGS.batch_size, 
@@ -141,15 +140,15 @@ def main(FLAGS, UNPARSED_ARGV):
     FLAGS.test_size = len(test_dataset)
 
     # Choose model
-    # model = models.__dict__.get(FLAGS.model)(FLAGS.num_layers, 
-    #                                          train_dataset.atom_feature_size, 
-    #                                          FLAGS.num_channels,
-    #                                          num_nlayers=FLAGS.num_nlayers,
-    #                                          num_degrees=FLAGS.num_degrees,
-    #                                          edge_dim=train_dataset.num_bonds,
-    #                                          div=FLAGS.div,
-    #                                          pooling=FLAGS.pooling,
-    #                                          n_heads=FLAGS.head)
+    model = models.__dict__.get(FLAGS.model)(FLAGS.num_layers, 
+                                             train_dataset.atom_feature_size, 
+                                             FLAGS.num_channels,
+                                             num_nlayers=FLAGS.num_nlayers,
+                                             num_degrees=FLAGS.num_degrees,
+                                             edge_dim=train_dataset.num_bonds,
+                                             div=FLAGS.div,
+                                             pooling=FLAGS.pooling,
+                                             n_heads=FLAGS.head)
     if FLAGS.restore is not None:
         model.load_state_dict(torch.load(FLAGS.restore))
     model.to(FLAGS.device)

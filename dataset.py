@@ -12,7 +12,7 @@ import gpytorch
 from functools import partial
 from graphein.protein.edges.distance import add_k_nn_edges, add_hydrogen_bond_interactions, add_peptide_bonds
 from graphein.protein.features.nodes.amino_acid import amino_acid_one_hot
-from graphein.ml.conversion import GraphFormatConvertor
+# from graphein.ml.conversion import GraphFormatConvertor
 from graphein.protein.config import ProteinGraphConfig
 from graphein.protein.graphs import construct_graph
 from graphein.protein.visualisation import plot_protein_structure_graph

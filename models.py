@@ -120,7 +120,7 @@ class SE3Transformer(nn.Module):
         FCblock = []
         FCblock.append(nn.Linear(self.fibers['out'].n_features, self.fibers['out'].n_features))
         FCblock.append(nn.ReLU(inplace=True))
-#         FCblock.append(nn.Linear(self.fibers['out'].n_features, out_dim))
+        FCblock.append(nn.Linear(self.fibers['out'].n_features, out_dim))
 
         return nn.ModuleList(Gblock), nn.ModuleList(FCblock)
 

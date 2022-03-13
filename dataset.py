@@ -51,11 +51,9 @@ class _Antibody_Antigen_Dataset(Dataset):
             return meta_df[int(0.6*len(meta_df)):int(0.8*len(meta_df))].reset_index(drop=True)
         if self.mode=='test':
             return meta_df[int(0.8*len(meta_df)):].reset_index(drop=True)
-        meta_df
 
     def create_data(self, meta_df):
         length = len(meta_df)
-        print(length)
         for i in tqdm(range(length)):
             idx_list = list(range(length))
             idx_list.pop(i)
@@ -120,5 +118,4 @@ class _Antibody_Antigen_Dataset(Dataset):
         pdb_code = self.meta_df["pdb"][idx]
         chains_AB, chains_AG = self.meta_df["Hchain"][idx].split(' | '), self.meta_df["antigen_chain"][idx].split(' | ')
         
-        return self.get_dglGraph(pdb_code, chains_AB), self.get_dglGraph(pdb_code, chains_AG), np.asarray(self.meta_df['Target'][idx], dtype=DTYPE)
-
+        return self.get_dglGraph(pdb_code, chains_AB), self.get_dglGraph(pdb_code, chains_AG), np.asarray([self.meta_df['Target'][idx]], dtype=DTYPE)

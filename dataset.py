@@ -119,3 +119,102 @@ class _Antibody_Antigen_Dataset(Dataset):
         chains_AB, chains_AG = self.meta_df["Hchain"][idx].split(' | '), self.meta_df["antigen_chain"][idx].split(' | ')
         
         return self.get_dglGraph(pdb_code, chains_AB), self.get_dglGraph(pdb_code, chains_AG), np.asarray([self.meta_df['Target'][idx]], dtype=DTYPE)
+
+   
+DTYPE = np.float32
+class Antibody_Antigen_Dataset(Dataset):
+    """Class for Antibody and Antigen data"""
+    atom_feature_size, num_bonds = 20, 1
+    def __init__(self, summary_file_path, mode='train', transform=None):
+        """
+        Args:
+            summary_file_path (string): Path to summary file
+        """
+        self.summary_file_path = summary_file_path
+        self.mode = mode
+        self.summary_df = self.get_summary()
+        self.data_list = self.create_data()
+
+    def get_summary(self):
+        self.summary_df = pd.read_csv(f"{self.summary_file_path}")
+        self.summary_df.dropna(subset=["Hchain", "antigen_chain"], inplace=True)
+        self.summary_df.reset_index(drop=True, inplace=True)
+        if self.mode=='train':
+            return self.summary_df[:int(0.6*len(self.summary_df))].reset_index(drop=True)
+        if self.mode=='valid':
+            return self.summary_df[int(0.6*len(self.summary_df)):int(0.8*len(self.summary_df))].reset_index(drop=True)
+        if self.mode=='test':
+            return self.summary_df[int(0.8*len(self.summary_df)):].reset_index(drop=True)
+
+    def get_dglGraph(self, pdb_code, chains):
+        ## nxgraph
+        params = {"edge_construction_functions": [partial(add_k_nn_edges, k=3, long_interaction_threshold=0)],
+                "node_metadata_functions": [amino_acid_one_hot]}
+        config = ProteinGraphConfig(**params)
+        nxGraph = construct_graph(config=config, pdb_code=pdb_code, chain_selection=chains)
+        nxGraph = nxGraph.to_directed()
+        
+        # get nxgraph node feature
+        node_f, node_x = [], []
+        for n, char in nxGraph.nodes(data=True):
+            node_f.append(char["amino_acid_one_hot"].astype(DTYPE))
+            node_x.append(np.asarray(char["coords"]).astype(DTYPE))
+        node_f = torch.tensor(node_f).view(len(node_f), len(node_f[0]), 1)
+        node_x = torch.tensor(node_x).view(len(node_x), -1)
+
+        # get nxgraph edge feature
+        edge_w, edge_d = [], []
+        bb = nx.edge_betweenness_centrality(nxGraph, normalized=False)
+        nx.set_edge_attributes(nxGraph, bb, "betweenness")    
+        for src, dst, char in nxGraph.edges(data=True):
+            edge_w.append(char["betweenness"])
+            edge_d.append((nxGraph.nodes[src]['coords']-nxGraph.nodes[dst]['coords']).astype(DTYPE))
+        edge_w = torch.tensor(edge_w).view(len(edge_w), -1)
+        edge_d = torch.tensor(edge_d).view(len(edge_d), -1)
+
+        ## dgl graph
+        adjacency = nx.adjacency_matrix(nxGraph)
+        adjacency = adjacency.toarray()
+        src, dst = np.nonzero(adjacency)
+        dglGraph = dgl.graph((src, dst))
+
+        # add node features
+        dglGraph.ndata['x'] = node_x
+        dglGraph.ndata['f'] = node_f
+
+        # add edge features
+        dglGraph.edata['d'] = edge_d
+        dglGraph.edata['w'] = edge_w
+
+        return dglGraph
+
+    def create_data(self):
+        AntibodyGraph_list, AntigenGraph_list, data_list = [], [], []
+        for i in tqdm(range(len(self.summary_df))):
+            chains_AB, chains_AG = self.summary_df["Hchain"][i].split(' | '), self.summary_df["antigen_chain"][i].split(' | ')
+            pdb_code = self.summary_df["pdb"][i]
+            
+            AntibodyGraph_list.append(self.get_dglGraph(pdb_code, chains_AB))
+            AntigenGraph_list.append(self.get_dglGraph(pdb_code, chains_AG))
+            data_list.append({'Antibody': AntibodyGraph_list[-1], 
+                            'Antigen': AntigenGraph_list[-1], 
+                            'target': np.asarray([1], dtype=DTYPE)})
+
+        for i in tqdm(range(len(AntibodyGraph_list))):
+            tmp_AntigenGraph_list = AntigenGraph_list.copy()
+            tmp_AntigenGraph_list.pop(i)
+
+            AntigenGraph = random.choices(tmp_AntigenGraph_list, k=1)[0]
+            
+            data_list.append({'Antibody': AntibodyGraph_list[i], 
+                            'Antigen': AntigenGraph, 
+                            'target': np.asarray([0], dtype=DTYPE)})
+            random.shuffle(data_list)
+
+        return data_list
+        
+    def __len__(self):
+        return len(self.data_list)
+
+    def __getitem__(self, idx):
+        return self.data_list[idx]["Antibody"], self.data_list[idx]["Antigen"], self.data_list[idx]["target"] 

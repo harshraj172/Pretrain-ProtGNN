@@ -191,14 +191,17 @@ class Antibody_Antigen_Dataset(Dataset):
     def create_data(self):
         AntibodyGraph_list, AntigenGraph_list, data_list = [], [], []
         for i in tqdm(range(len(self.summary_df))):
-            chains_AB, chains_AG = self.summary_df["Hchain"][i].split(' | '), self.summary_df["antigen_chain"][i].split(' | ')
-            pdb_code = self.summary_df["pdb"][i]
-            
-            AntibodyGraph_list.append(self.get_dglGraph(pdb_code, chains_AB))
-            AntigenGraph_list.append(self.get_dglGraph(pdb_code, chains_AG))
-            data_list.append({'Antibody': AntibodyGraph_list[-1], 
-                            'Antigen': AntigenGraph_list[-1], 
-                            'target': np.asarray([1], dtype=DTYPE)})
+            try:
+                chains_AB, chains_AG = self.summary_df["Hchain"][i].split(' | '), self.summary_df["antigen_chain"][i].split(' | ')
+                pdb_code = self.summary_df["pdb"][i]
+
+                AntibodyGraph_list.append(self.get_dglGraph(pdb_code, chains_AB))
+                AntigenGraph_list.append(self.get_dglGraph(pdb_code, chains_AG))
+                data_list.append({'Antibody': AntibodyGraph_list[-1], 
+                                'Antigen': AntigenGraph_list[-1], 
+                                'target': np.asarray([1], dtype=DTYPE)})
+            except:
+                pass
 
         for i in tqdm(range(len(AntibodyGraph_list))):
             tmp_AntigenGraph_list = AntigenGraph_list.copy()

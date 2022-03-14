@@ -110,7 +110,7 @@ def collate(samples):
 def main(FLAGS, UNPARSED_ARGV):
 
     # Prepare data
-    train_dataset = _Antibody_Antigen_Dataset(FLAGS.meta_data_address, 
+    train_dataset = Antibody_Antigen_Dataset(FLAGS.meta_data_address, 
                                                      mode='train', 
                                                      transform=RandomRotation())
     train_loader = DataLoader(train_dataset, 
@@ -119,7 +119,7 @@ def main(FLAGS, UNPARSED_ARGV):
                               collate_fn=collate, 
                               num_workers=FLAGS.num_workers)
 
-    val_dataset = _Antibody_Antigen_Dataset(FLAGS.meta_data_address, 
+    val_dataset = Antibody_Antigen_Dataset(FLAGS.meta_data_address, 
                                                    mode='valid') 
     val_loader = DataLoader(val_dataset, 
                             batch_size=FLAGS.batch_size, 
@@ -127,7 +127,7 @@ def main(FLAGS, UNPARSED_ARGV):
                             collate_fn=collate, 
                             num_workers=FLAGS.num_workers)
 
-    test_dataset = _Antibody_Antigen_Dataset(FLAGS.meta_data_address, 
+    test_dataset = Antibody_Antigen_Dataset(FLAGS.meta_data_address, 
                                                     mode='test') 
     test_loader = DataLoader(test_dataset, 
                              batch_size=FLAGS.batch_size, 

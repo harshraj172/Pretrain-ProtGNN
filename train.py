@@ -15,7 +15,7 @@ import wandb
 from torch import nn, optim
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
-from dataset import _Antibody_Antigen_Dataset
+from dataset import _Antibody_Antigen_Dataset, Antibody_Antigen_Dataset
 
 import models #as models
 

@@ -163,9 +163,9 @@ class Dual_SE3Transformer(nn.Module):
         blocks_AG = self._build_gcn(self.fibers)
         
         self.Gblock_AB, self.FCblock_AB = blocks_AB
-        self.Gblock_AG, self.FCblock_AG = blocks_AG
-
-        self.combine_FCBlock = self.combine_block(2*self.fibres['out'].n_features, 1)
+        self.Gblock_AG, self.FCblock_AG = blocks_AG 
+       
+        self.combine_FCBlock = self.combine_block(2*self.fibers['out'].n_features, 1)
 
     def _build_gcn(self, fibers):
         # Equivariant layers
@@ -196,7 +196,7 @@ class Dual_SE3Transformer(nn.Module):
         combine_FCblock = []
         combine_FCblock.append(nn.Linear(in_dim, int(in_dim/2)))
         combine_FCblock.append(nn.ReLU(inplace=True))
-        combine_FCblock.append(int(in_dim/2), out_dim))
+        combine_FCblock.append(nn.Linear(int(in_dim/2), out_dim))
         
         return nn.ModuleList(combine_FCblock)
 
@@ -217,7 +217,7 @@ class Dual_SE3Transformer(nn.Module):
         # concatenate the hidden states
         h = torch.cat((h_AB, h_AG), 1)
 
-        for layer in self.combine_FCblock:
+        for layer in self.combine_FCBlock:
             h = layer(h)
             
         return h

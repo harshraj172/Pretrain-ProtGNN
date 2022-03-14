@@ -195,10 +195,11 @@ class Antibody_Antigen_Dataset(Dataset):
                 chains_AB, chains_AG = self.summary_df["Hchain"][i].split(' | '), self.summary_df["antigen_chain"][i].split(' | ')
                 pdb_code = self.summary_df["pdb"][i]
 
-                AntibodyGraph_list.append(self.get_dglGraph(pdb_code, chains_AB))
-                AntigenGraph_list.append(self.get_dglGraph(pdb_code, chains_AG))
-                data_list.append({'Antibody': AntibodyGraph_list[-1], 
-                                'Antigen': AntigenGraph_list[-1], 
+                Antibody, Antigen = self.get_dglGraph(pdb_code, chains_AB), self.get_dglGraph(pdb_code, chains_AG)
+                AntibodyGraph_list.append(Antibody)
+                AntigenGraph_list.append(Antigen)
+                data_list.append({'Antibody': Antibody, 
+                                'Antigen': Antigen, 
                                 'target': np.asarray([1], dtype=DTYPE)})
             except:
                 pass
@@ -212,8 +213,8 @@ class Antibody_Antigen_Dataset(Dataset):
             data_list.append({'Antibody': AntibodyGraph_list[i], 
                             'Antigen': AntigenGraph, 
                             'target': np.asarray([0], dtype=DTYPE)})
-            random.shuffle(data_list)
 
+        random.shuffle(data_list)
         return data_list
         
     def __len__(self):

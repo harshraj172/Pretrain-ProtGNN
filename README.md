@@ -13,5 +13,5 @@
 ### USAGE:
 ##### Clone this repo
 
-The main script offers many options; here are the most important ones:
-> python /content/train.py --meta_data_address /content/meta_file.csv
+The train script offers many options; here are the most important ones:
+> python train.py --meta_data_address /content/meta_file.csv

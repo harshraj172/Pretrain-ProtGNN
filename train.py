@@ -163,7 +163,8 @@ def main(FLAGS, UNPARSED_ARGV):
 
     # Loss function
     def task_loss(pred, target, use_mean=True):
-        l1_loss = criterion(pred, target)
+	eps = 1e-10
+        l1_loss = criterion(pred+eps, target)
         l2_loss = torch.sum(torch.abs(pred - target))
         if use_mean:
             l2_loss /= pred.shape[0]

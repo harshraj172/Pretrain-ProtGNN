@@ -14,4 +14,4 @@
          
 3. To train the network on Jupyter Notebook:
    
-   run run_exp.ipynb
+   run *run_exp.ipynb*

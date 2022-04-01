@@ -12,6 +12,8 @@ from torch.optim import Adam
 from GCL.eval import get_split, SVMEvaluator
 from torch_geometric.data import Data, DataLoader
 
+from models import *
+from loss import *
 
 def train(encoder_model, contrast_model, dataloader, optimizer, topk=1):
     encoder_model.train()

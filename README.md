@@ -10,8 +10,6 @@
  
 1. To train the model using bash command:
    
-         python run_experiments.py --data_path data_path --batch_size 256
+         python pretrain_prot/run_experiments.py
          
-3. To train the network on Jupyter Notebook:
-   
-   *run_exp.ipynb*
+

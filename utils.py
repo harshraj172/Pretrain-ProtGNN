@@ -1,5 +1,15 @@
+import json
+import numpy as np
 import torch
+from torch_geometric.data import Data
 from structgen import protein_features 
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+def read_json(path):
+    with open(path, 'r') as f:
+        X = json.load(f)
+    return X  
 
 def ProteinFeatures(top_k=30, num_rbf=16, features_type='full', direction='bidirectional'):
     features = protein_features.ProteinFeatures(

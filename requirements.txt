@@ -1,0 +1,6 @@
+pip install biopython
+pip install torch_geometric
+pip install torch-sparse
+pip install torch-scatter
+pip install dgl
+pip install PyGCL

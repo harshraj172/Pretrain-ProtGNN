@@ -1,6 +1,7 @@
 import torch
 import torch.nn.functional as F
-import GCL.losses as L
+from GCL.losses import *
+from utils import *
 
 def _similarity(h1: torch.Tensor, h2: torch.Tensor):
     h1 = F.normalize(h1)
@@ -22,3 +23,4 @@ class InfoNCE(Loss):
         # Accuracy
         acc = accuracy(sim, topk)
         return -loss.mean(), acc[0]
+

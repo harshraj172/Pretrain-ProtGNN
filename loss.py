@@ -24,3 +24,4 @@ class InfoNCE(Loss):
         acc = accuracy(sim, topk)
         return -loss.mean(), acc[0]
 
+

@@ -36,8 +36,7 @@ def train(encoder_model, contrast_model, dataloader, optimizer, topk=1):
         optimizer.step()
 
         epoch_loss += loss.item()
-    print(f"Top-{topk} Accuracy: {acc}")
-    return epoch_loss
+    return epoch_loss, acc
 
 
 def test(encoder_model, dataloader):
@@ -80,7 +79,9 @@ def main():
 
     with tqdm(total=100, desc='(T)') as pbar:
         for epoch in range(args.epochs):
-            loss = train(encoder_model, contrast_model, dataloader, optimizer, args.topk)
+            loss, acc = train(encoder_model, contrast_model, dataloader, optimizer, args.topk)
+            if args.print_feq%epoch==0:
+                print(f"Top-{topk} Accuracy: {acc}")
             pbar.set_postfix({'loss': loss})
             pbar.update()
         print(f"loss = {loss}")
@@ -104,6 +105,7 @@ if __name__ == '__main__':
                         help='number of total epochs to run')
     parser.add_argument('--lr', '--learning-rate', default=0.01, type=float)
     parser.add_argument('--topk', default=(1,), type=tuple)
+    parser.add_argument('--print_feq', default=5, type=int, help="print the accuracy after certain interval")
 
     args = parser.parse_args("")
     

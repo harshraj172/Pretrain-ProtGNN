@@ -53,4 +53,3 @@ class Encoder(torch.nn.Module):
         z1, g1 = self.encoder(x1, edge_index1, edge_weight1, batch)
         z2, g2 = self.encoder(x2, edge_index2, edge_weight2, batch)
         return z, g, z1, z2, g1, g2
-

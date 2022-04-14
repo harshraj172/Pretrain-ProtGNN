@@ -21,7 +21,7 @@ class DualBranchContrast(torch.nn.Module):
         self.kwargs = kwargs
 
     def forward(self, h1=None, h2=None, g1=None, g2=None, batch=None, h3=None, h4=None,
-                extra_pos_mask=None, extra_neg_mask=None, topk=(1,)):
+                extra_pos_mask=None, extra_neg_mask=None, topk=(1,5)):
         if self.mode == 'L2L':
             assert h1 is not None and h2 is not None
             anchor1, sample1, pos_mask1, neg_mask1 = self.sampler(anchor=h1, sample=h2)

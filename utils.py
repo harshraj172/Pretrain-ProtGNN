@@ -1,8 +1,9 @@
 import json
 import numpy as np
 import torch
+import torch.nn.functional as F
 from torch_geometric.data import Data
-from structgen import protein_features 
+from pretrain_prot.structgen import protein_features 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -19,15 +20,25 @@ def ProteinFeatures(top_k=30, num_rbf=16, features_type='full', direction='bidir
     )
     return features
 
+alphabet = '#ACDEFGHIKLMNPQRSTVWYX'
 def completize(batch, batch_idx=1):
-    L_max = len(batch['coords']['CA'])
+    """
+    Note: For a batch of size 1
+    """
+    L_max = len(batch['seq'])
     X = np.zeros([batch_idx, L_max, 4, 3])
+#     S = np.zeros([batch_idx, L_max], dtype=np.int32)
+    S = batch['seq']
     mask = np.zeros([batch_idx, L_max], dtype=np.float32)
 
     # Build the batch
     x = np.stack([batch['coords'][c] for c in ['N', 'CA', 'C', 'O']], 1)
     X[batch_idx-1,:len(x),:,:] = x
-    mask[batch_idx-1, :L_max] = 1.
+    
+    l = len(batch['seq'])
+#     indices = np.asarray([alphabet.index(a) for a in batch['seq']], dtype=np.int32)
+#     S[batch_idx-1, :l] = indices
+    mask[batch_idx-1, :l] = 1.
 
     # Remove NaN coords
     mask = mask * np.isfinite(np.sum(X,(2,3))).astype(np.float32)
@@ -35,9 +46,10 @@ def completize(batch, batch_idx=1):
     X[isnan] = 0.
 
     # Conversion
+#     S = torch.from_numpy(S).long().cuda()
     X = torch.from_numpy(X).float().cuda()
     mask = torch.from_numpy(mask).float().cuda()
-    return X, mask
+    return X, S, mask
   
 def to_torch_geom(E, E_idx):
     # get edge indices
@@ -63,23 +75,30 @@ def prepare_data(path, batch_size):
         E, E_idx = to_torch_geom(E, E_idx)
         data_lst.append(Data(x=V[0, :, :], edge_index=E_idx[0, :, :], edge_attr=E[0, :, :], batch=torch.tensor([int(i/batch_size)])))
     return data_lst
-  
-def accuracy(sim, topk=(1,)):
+
+def _similarity(h1: torch.Tensor, h2: torch.Tensor):
+    h1 = F.normalize(h1)
+    h2 = F.normalize(h2)
+    return h1 @ h2.t()
+
+def accuracy(sim, topk=(1,5)):
     """Computes the accuracy over the k top predictions for the specified values of k"""
     mask = torch.eye(sim.shape[0], dtype=torch.bool).to(device)
     neg = sim[~mask].view(sim.shape[0], -1)
     pos = sim[mask].view(sim.shape[0], -1)
     output = torch.cat([pos, neg], dim=1)
     target = torch.zeros(output.shape[0], dtype=torch.long).to(device)
-        
+    
     with torch.no_grad():
-        maxk = max(topk)
         batch_size = target.size(0)
+        maxk = min(max(topk), batch_size)
 
         _, pred = output.topk(maxk, 1, True, True)
         pred = pred.t()
         correct = pred.eq(target.view(1, -1).expand_as(pred))
-
+        
+        assert correct.size(1) == batch_size
+        
         res = []
         for k in topk:
             correct_k = correct[:k].reshape(-1).float().sum(0, keepdim=True)

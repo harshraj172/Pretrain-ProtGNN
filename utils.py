@@ -3,7 +3,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from torch_geometric.data import Data
-from pretrain_prot.structgen import protein_features 
+from Pretrain_ProtGNN.structgen import protein_features 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

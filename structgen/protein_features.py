@@ -9,7 +9,7 @@ import copy
 
 from matplotlib import pyplot as plt
 
-from pretrain_prot.structgen.utils import gather_edges, gather_nodes, Normalize
+from Pretrain_ProtGNN.structgen.utils import gather_edges, gather_nodes, Normalize
 
 
 class PositionalEncodings(nn.Module):
